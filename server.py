@@ -37,14 +37,13 @@ def get_serv_who_is_not_me():
     conn = sqlite3.connect('db.sqlite')
     c = conn.cursor()
     rows = c.execute(
-        "SELECT * FROM servers WHERE NOT (port=? AND host=?)",
+        "SELECT * FROM servers WHERE NOT (port = ? AND host = ?)",
         (me['port'], me['host'],)
     ).fetchall()
     conn.close()
     selected = rows[randint(0, len(rows)-1)]
     return str({"port": selected[1], "host": selected[0]})
     
-
 def get_running_properties():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(('localhost', 0))

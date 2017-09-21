@@ -1,10 +1,9 @@
+import json
 import socket
 import sqlite3
 from random import randint
 
 import sys
-
-import signal
 from flask import Flask
 from flask import request
 
@@ -17,9 +16,10 @@ me = {
 @app.route("/")
 def hello():
     if randint(0, 1):
-        return "Hello World! running on : {}".format(
-            request.host
-        )
+        return json.dumps({
+            "msg": "hello world",
+            "srv": request.host
+        })
     else:
         return get_serv_who_is_not_me(), 302
 
@@ -41,17 +41,28 @@ def get_serv_who_is_not_me():
         (me['port'], me['host'],)
     ).fetchall()
     conn.close()
-    selected = rows[randint(0, len(rows)-1)]
-    return str({"port": selected[1], "host": selected[0]})
-    
-def get_running_properties():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(('localhost', 0))
-    me['host'] = sock.getsockname()[0]
-    me['port'] = sock.getsockname()[1]
-    sock.close()
+    try:
+        selected = rows[randint(0, len(rows)-1)]
+        next = {
+            "port": selected[1],
+            "host": selected[0]
+        }
+    except:
+        next = {
+            "port": None,
+            "host": None
+        }
+    return json.dumps(next)
+
+def main(host, port):
+    me['host'] = host
+    me['port'] = port
+    add_srv_properties_to_db(host=me['host'], port=me['port'])
+    app.run(port=me['port'])
 
 if __name__ == '__main__':
-    get_running_properties()
-    add_srv_properties_to_db(host=me['host'],port=me['port'])
-    app.run(port=me['port'])
+    me['host'] = sys.argv[1]
+    me['port'] = sys.argv[2]
+
+    print(sys.argv[0])
+    main(me['host'], me['port'])

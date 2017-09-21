@@ -1,8 +1,6 @@
 import json
 import sys
 import requests
-from urllib import request
-
 
 def call_srv(host, port):
     response = requests.get("http://{0}:{1}".format(host, port))
